@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>럭셔리 미니멀 계산기</title>
+    <style>
+        /* 배경 및 기본 폰트 설정 */
+        body {
+            background-color: #0f0f11; /* 깊고 어두운 고급스러운 제트 블랙 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* 계산기 전체 컨테이너 */
+        #calculator {
+            background: linear-gradient(145deg, #1d1d22, #131317);
+            padding: 32px;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7),
+                        inset 0 1px 1px rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            width: 320px;
+        }
+        
+        /* 디스플레이 (결과창) */
+        #display {
+            width: 100%;
+            height: 80px;
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            font-size: 2.5rem;
+            font-weight: 300;
+            text-align: right;
+            padding: 0 8px;
+            margin-bottom: 24px;
+            box-sizing: border-box;
+            outline: none;
+            letter-spacing: -1px;
+        }
+
+        #display::placeholder {
+            color: #4a4a52;
+        }
+        
+        /* 버튼 그리드 레이아웃 */
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+        }
+        
+        /* 버튼 공통 스타일 */
+        button {
+            height: 64px;
+            border-radius: 16px;
+            border: none;
+            background: #1c1c24;
+            color: #e4e4e7;
+            font-size: 1.25rem;
+            font-weight: 400;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            outline: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* 버튼 호버 및 액션 효과 */
+        button:hover {
+            background: #252530;
+            color: #ffffff;
+        }
+
+        button:active {
+            transform: scale(0.96);
+            background: #181820;
+        }
+        
+        /* 기능 및 연산자 버튼 포인트 (은은한 골드/샴페인 톤) */
+        button.clear { /* C 버튼 */
+            color: #d4a373; 
+            font-weight: 500;
+        }
+
+        /* 사칙연산 및 이퀄 버튼 스타일 */
+        button.operator {
+            background: #23232e;
+            color: #d4a373; /* 은은한 명품 브랜드 특유의 샴페인 골드 컬러 */
+            font-weight: 500;
+        }
+
+        button.operator:hover {
+            background: #d4a373;
+            color: #0f0f11;
+        }
+
+        /* 0 버튼 레이아웃 조정 (두 칸 차지) */
+        button.zero {
+            grid-column: span 2;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="calculator">
+        
+        <input type="text" id="display" readonly placeholder="0">
+        
+        <div class="buttons">
+            <button type="button" class="clear" onclick="clearDisplay()">C</button>
+            <button type="button" class="operator" onclick="appendValue('/')">/</button>
+            <button type="button" class="operator" onclick="appendValue('*')">*</button>
+            <button type="button" class="operator" onclick="appendValue('-')">-</button>
+            
+            <button type="button" onclick="appendValue('7')">7</button>
+            <button type="button" onclick="appendValue('8')">8</button>
+            <button type="button" onclick="appendValue('9')">9</button>
+            <button type="button" class="operator" onclick="appendValue('+')">+</button> 
+            
+            <button type="button" onclick="appendValue('4')">4</button>
+            <button type="button" onclick="appendValue('5')">5</button>
+            <button type="button" onclick="appendValue('6')">6</button>
+            <button type="button" class="operator" onclick="calculate()">=</button>
+            
+            <button type="button" onclick="appendValue('1')">1</button>
+            <button type="button" onclick="appendValue('2')">2</button>
+            <button type="button" onclick="appendValue('3')">3</button>
+            <button type="button" class="zero" onclick="appendValue('0')">0</button>
+            <button type="button" onclick="appendValue('.')">.</button>
+        </div>
+        
+    </div>
+
+    <script>
+        const display = document.getElementById('display');
+        let shouldResetDisplay = false; // 계산 완료 후 새로운 숫자를 누를 때 화면을 비우기 위한 플래그
+
+        // 버튼을 누를 때 값을 추가하는 함수
+        function appendValue(value) {
+            // 계산이 끝난 직후 숫자를 누르면 기존 결과를 지우고 새로 시작
+            if (shouldResetDisplay && !isNaN(value)) {
+                display.value = '';
+                shouldResetDisplay = false;
+            } else {
+                shouldResetDisplay = false;
+            }
+
+            // 디스플레이가 0일 때 숫자를 누르면 0을 대체
+            if (display.value === '0' && !isNaN(value)) {
+                display.value = value;
+            } else {
+                display.value += value;
+            }
+        }
+
+        // 화면을 완전히 초기화하는 함수 (C 버튼)
+        function clearDisplay() {
+            display.value = '';
+            shouldResetDisplay = false;
+        }
+
+        // 수식을 계산하는 함수 (= 버튼)
+        function calculate() {
+            try {
+                // 입력된 수식이 없으면 실행하지 않음
+                if (display.value === '') return;
+
+                // eval 함수를 안전하게 사용하기 위해 수식 계산 진행
+                // JavaScript의 float 연산 오류(예: 0.1+0.2=0.3000004)를 방지하기 위해 소수점 자릿수 정돈
+                let result = eval(display.value);
+                
+                if (result !== undefined && !isNaN(result)) {
+                    // 정수면 그대로, 소수점이 길면 8자리까지만 표시
+                    display.value = Number(result.toFixed(8)).toString();
+                    shouldResetDisplay = true; // 다음 입력 시 리셋 대기
+                }
+            } catch (error) {
+                // 잘못된 수식 입력 시 Error 메시지 출력
+                display.value = 'Error';
+                shouldResetDisplay = true;
+            }
+        }
+    </script>
+
+</body>
+</html>
